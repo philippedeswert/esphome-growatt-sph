@@ -1,0 +1,362 @@
+esphome:
+  name: growatt-sph
+  friendly_name: Growatt SPH
+
+esp8266:
+  board: esp07s
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "Add your own key here"
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Growatt-Sph Fallback Hotspot"
+    password: "Your own password"
+
+
+# LED definitions, unused/untested
+output:
+# Blue Led
+  - id: light_bl
+    platform: gpio
+    pin: 16
+# Green Led
+  - id: light_gr
+    platform: gpio
+    pin: 0
+# Red Led
+  - id: light_rd
+    platform: gpio
+    pin: 2
+
+uart:
+  id: mod_bus
+  tx_pin: 1
+  rx_pin: 3
+  baud_rate: 115200
+
+modbus:
+  id: modbus1
+  uart_id: mod_bus
+
+modbus_controller:
+  - id: epever
+    ## the Modbus device addr
+    address: 0x1
+    setup_priority: -10
+    update_interval: 10s
+
+sensor:
+  - platform: growatt_solar
+    update_interval: 10s
+    protocol_version: RTU2
+    phase_a:
+      voltage:
+          name: "Growatt Voltage Phase A"
+      current:
+          name: "Growatt Current Phase A"
+      active_power:
+          name: "Growatt Power Phase A"
+          filters:
+            lambda:
+              float MIN_VALUE = 0.0;
+              float MAX_VALUE = 7000.0;
+              if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
+              else return {};
+    phase_b:
+      voltage:
+          name: "Growatt Voltage Phase B"
+      current:
+          name: "Growatt Current Phase B"
+      active_power:
+          name: "Growatt Power Phase B"
+          filters:
+            lambda:
+              float MIN_VALUE = 0.0;
+              float MAX_VALUE = 7000.0;
+              if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
+              else return {};
+    phase_c:
+      voltage:
+          name: "Growatt Voltage Phase C"
+      current:
+          name: "Growatt Current Phase C"
+      active_power:
+          name: "Growatt Power Phase C"
+          filters:
+            lambda:
+              float MIN_VALUE = 0.0;
+              float MAX_VALUE = 7000.0;
+              if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
+              else return {};
+    pv1:
+      voltage:
+          name: "Growatt PV1 Voltage"
+      current:
+          name: "Growatt PV1 Current"
+      active_power:
+          name: "Growatt PV1 Active Power"
+
+# uncomment if you use the second MPPT
+#    pv2:
+#      voltage:
+#          name: "Growatt PV2 Voltage"
+#      current:
+#          name: "Growatt PV2 Current"
+#      active_power:
+#          name: "Growatt PV2 Active Power"
+
+    active_power:
+      name: "Growatt Grid Active Power"
+
+    pv_active_power:
+      name: "Growatt PV Active Power"
+      filters:
+        - lambda:
+            float MIN_VALUE = 0.0;
+            float MAX_VALUE = 6000.0;
+            if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
+            else return {};
+
+    frequency:
+      name: "Growatt AC Frequency"
+
+# Didn't work for me, needs more testing
+#    energy_production_day:
+#      name: "Growatt Today's Generation"
+#   total_energy_production:
+#     name: "Growatt Total Energy Production"
+
+    inverter_module_temp:
+      name: "Growatt Inverter Temperature"
+
+    inverter_status:
+      name: "Growatt Inverter Status"
+
+  - platform: modbus_controller
+    name: "PV generated energy today"
+    address: 53
+    register_type: "read"
+    unit_of_measurement: kWh
+    value_type: U_DWORD
+    state_class: total_increasing
+    icon: mdi:solar-power
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "PV generated energy lifetime"
+    address: 91
+    register_type: "read"
+    unit_of_measurement: kWh
+    value_type: U_DWORD
+    state_class: total_increasing
+    icon: mdi:solar-power
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Today energy to load"
+    address: 1060
+    register_type: "read"
+    unit_of_measurement: kWh
+    value_type: U_DWORD
+    state_class: total_increasing
+    icon: mdi:solar-power
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Total energy to load"
+    address: 1062
+    register_type: "read"
+    unit_of_measurement: kWh
+    value_type: U_DWORD
+    state_class: total_increasing
+    icon: mdi:solar-power
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Today energy to Grid"
+    address: 1048
+    register_type: "read"
+    unit_of_measurement: kWh
+    value_type: U_DWORD
+    state_class: total_increasing
+    icon: mdi:solar-power
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Total energy to Grid"
+    address: 1029
+    register_type: "read"
+    unit_of_measurement: kWh
+    value_type: U_DWORD
+    state_class: total_increasing
+    icon: mdi:solar-power
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Battery Discharging Power"
+    address: 1009
+    register_type: "read"
+    unit_of_measurement: kW
+    device_class: power
+    icon: mdi:battery-charging-medium
+    value_type: U_DWORD
+    accuracy_decimals: 3
+    filters:
+    - multiply: 0.0001
+
+  - platform: modbus_controller
+    name: "Battery Charging Power"
+    address: 1011
+    register_type: "read"
+    unit_of_measurement: kW
+    device_class: power
+    icon: mdi:battery-charging-high
+    value_type: U_DWORD
+    accuracy_decimals: 3
+    filters:
+    - multiply: 0.0001
+
+  - platform: modbus_controller
+    name: "Battery voltage"
+    address: 1013
+    register_type: "read"
+    unit_of_measurement: "V"
+    icon: mdi:battery
+    value_type: U_WORD
+    accuracy_decimals: 1
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Battery SOC"
+    address: 1014
+    register_type: "read"
+    unit_of_measurement: "%"
+    icon: mdi:battery
+    value_type: U_WORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    name: "Battery lifetime charged"
+    address: 1058
+    register_type: "read"
+    unit_of_measurement: kWh
+    device_class: power
+    state_class: total_increasing
+    icon: mdi:solar-power
+    value_type: U_DWORD
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Battery lifetime discharged"
+    address: 1054
+    register_type: "read"
+    unit_of_measurement: kWh
+    device_class: power
+    state_class: total_increasing
+    icon: mdi:solar-power
+    value_type: U_DWORD
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Battery charged today"
+    address: 1056
+    register_type: "read"
+    unit_of_measurement: kWh
+    device_class: power
+    state_class: total_increasing
+    icon: mdi:solar-power
+    value_type: U_DWORD
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "Battery discharged today"
+    address: 1052
+    register_type: "read"
+    unit_of_measurement: kWh
+    device_class: power
+    state_class: total_increasing
+    icon: mdi:solar-power
+    value_type: U_DWORD
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+# incorrect multiplier/wrong data?
+  - platform: modbus_controller
+    name: "Battery temperature"
+    address: 1089
+    register_type: "read"
+    unit_of_measurement: C
+    device_class: power
+    state_class: measurement
+    icon: mdi:battery
+    value_type: U_DWORD
+    accuracy_decimals: 2
+    filters:
+    - multiply: 0.1
+
+# probably needs a custom modbus command
+#  - platform: modbus_controller
+#    name: "Serial"
+#    address: 23
+#    register_type: "read"
+#    value_type: U_DWORD
+
+
+# not working yet
+select:
+  - platform: modbus_controller
+    name: "Growatt Inverter Priority" #Nope
+    icon: mdi:arrow-decision-outline
+    address: 3144
+    value_type: U_WORD
+    optionsmap:
+      "Load First": 0
+      "Battery First": 1
+      "Grid First": 2
+
+# not working yet
+switch:
+  - platform: modbus_controller
+    modbus_controller_id: epever
+    name: "Growatt AC Charging"
+    icon: mdi:battery-charging-100
+    address: 1092 #1043
+    register_type: holding
