@@ -138,7 +138,7 @@ sensor:
     frequency:
       name: "Growatt AC Frequency"
 
-# Didn't work for me, needs more testing
+#Didn't work for me, needs more testing
 #    energy_production_day:
 #      name: "Growatt Today's Generation"
 #   total_energy_production:
@@ -154,13 +154,15 @@ sensor:
     name: "PV generated energy today"
     address: 53
     register_type: "read"
-    unit_of_measurement: kWh
+    unit_of_measurement: Wh
     value_type: U_DWORD
     state_class: total_increasing
     icon: mdi:solar-power
     accuracy_decimals: 2
+    # seems to be that the value is half of what it should be?
+    # matches Growatt Today's Generation otherwise
     filters:
-    - multiply: 0.1
+    - multiply: 200
 
   - platform: modbus_controller
     name: "PV generated energy lifetime"
@@ -169,6 +171,7 @@ sensor:
     unit_of_measurement: kWh
     value_type: U_DWORD
     state_class: total_increasing
+    device_class: energy
     icon: mdi:solar-power
     accuracy_decimals: 2
     filters:
@@ -226,25 +229,25 @@ sensor:
     name: "Battery Discharging Power"
     address: 1009
     register_type: "read"
-    unit_of_measurement: kW
-    device_class: power
+    unit_of_measurement: W
+    device_class: battery
     icon: mdi:battery-charging-medium
     value_type: U_DWORD
-    accuracy_decimals: 3
+    #accuracy_decimals: 3
     filters:
-    - multiply: 0.0001
+    - multiply: 0.1
 
   - platform: modbus_controller
     name: "Battery Charging Power"
     address: 1011
     register_type: "read"
-    unit_of_measurement: kW
-    device_class: power
+    unit_of_measurement: W
+    device_class: battery
     icon: mdi:battery-charging-high
     value_type: U_DWORD
-    accuracy_decimals: 3
+    #accuracy_decimals: 3
     filters:
-    - multiply: 0.0001
+    - multiply: 0.1
 
   - platform: modbus_controller
     name: "Battery voltage"
@@ -271,7 +274,7 @@ sensor:
     address: 1058
     register_type: "read"
     unit_of_measurement: kWh
-    device_class: power
+    device_class: energy
     state_class: total_increasing
     icon: mdi:solar-power
     value_type: U_DWORD
@@ -284,7 +287,7 @@ sensor:
     address: 1054
     register_type: "read"
     unit_of_measurement: kWh
-    device_class: power
+    device_class: energy
     state_class: total_increasing
     icon: mdi:solar-power
     value_type: U_DWORD
@@ -297,7 +300,7 @@ sensor:
     address: 1056
     register_type: "read"
     unit_of_measurement: kWh
-    device_class: power
+    device_class: energy_storage
     state_class: total_increasing
     icon: mdi:solar-power
     value_type: U_DWORD
@@ -310,7 +313,7 @@ sensor:
     address: 1052
     register_type: "read"
     unit_of_measurement: kWh
-    device_class: power
+    device_class: energy_storage
     state_class: total_increasing
     icon: mdi:solar-power
     value_type: U_DWORD
@@ -324,13 +327,13 @@ sensor:
     address: 1089
     register_type: "read"
     unit_of_measurement: C
-    device_class: power
+    device_class: temperature
     state_class: measurement
     icon: mdi:battery
     value_type: U_DWORD
     accuracy_decimals: 2
     filters:
-    - multiply: 0.1
+    - multiply: 0.000001
 
 # probably needs a custom modbus command
 #  - platform: modbus_controller
