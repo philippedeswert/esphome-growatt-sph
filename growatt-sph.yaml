@@ -30,7 +30,6 @@ wifi:
     ssid: "Growatt-Sph Fallback Hotspot"
     password: "Your own password"
 
-
 # LED definitions, unused/untested
 output:
 # Blue Led
@@ -61,11 +60,11 @@ modbus_controller:
     ## the Modbus device addr
     address: 0x1
     setup_priority: -10
-    update_interval: 10s
+    update_interval: 15s
 
 sensor:
   - platform: growatt_solar
-    update_interval: 10s
+    update_interval: 15s
     protocol_version: RTU2
     phase_a:
       voltage:
@@ -162,7 +161,7 @@ sensor:
     # seems to be that the value is half of what it should be?
     # matches Growatt Today's Generation otherwise
     filters:
-    - multiply: 200
+    - multiply: 146
 
   - platform: modbus_controller
     name: "PV generated energy lifetime"
@@ -230,7 +229,7 @@ sensor:
     address: 1009
     register_type: "read"
     unit_of_measurement: W
-    device_class: battery
+    device_class: energy
     icon: mdi:battery-charging-medium
     value_type: U_DWORD
     #accuracy_decimals: 3
@@ -242,7 +241,7 @@ sensor:
     address: 1011
     register_type: "read"
     unit_of_measurement: W
-    device_class: battery
+    device_class: energy
     icon: mdi:battery-charging-high
     value_type: U_DWORD
     #accuracy_decimals: 3
@@ -301,7 +300,7 @@ sensor:
     register_type: "read"
     unit_of_measurement: kWh
     device_class: energy_storage
-    state_class: total_increasing
+    state_class: measurement
     icon: mdi:solar-power
     value_type: U_DWORD
     accuracy_decimals: 2
