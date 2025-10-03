@@ -71,93 +71,6 @@ modbus_controller:
     update_interval: 15s
 
 sensor:
-  - platform: growatt_solar
-    update_interval: 15s
-    protocol_version: RTU2
-    phase_a:
-      voltage:
-          name: "Growatt Voltage Phase A"
-      current:
-          name: "Growatt Current Phase A"
-      active_power:
-          name: "Growatt Power Phase A"
-          filters:
-            lambda:
-              float MIN_VALUE = 0.0;
-              float MAX_VALUE = 7000.0;
-              if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
-              else return {};
-    phase_b:
-      voltage:
-          name: "Growatt Voltage Phase B"
-      current:
-          name: "Growatt Current Phase B"
-      active_power:
-          name: "Growatt Power Phase B"
-          filters:
-            lambda:
-              float MIN_VALUE = 0.0;
-              float MAX_VALUE = 7000.0;
-              if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
-              else return {};
-    phase_c:
-      voltage:
-          name: "Growatt Voltage Phase C"
-      current:
-          name: "Growatt Current Phase C"
-      active_power:
-          name: "Growatt Power Phase C"
-          filters:
-            lambda:
-              float MIN_VALUE = 0.0;
-              float MAX_VALUE = 7000.0;
-              if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
-              else return {};
-    pv1:
-      voltage:
-          name: "Growatt PV1 Voltage"
-      current:
-          name: "Growatt PV1 Current"
-      active_power:
-          name: "Growatt PV1 Active Power"
-
-# uncomment if you use the second MPPT
-#    pv2:
-#      voltage:
-#          name: "Growatt PV2 Voltage"
-#      current:
-#          name: "Growatt PV2 Current"
-#      active_power:
-#          name: "Growatt PV2 Active Power"
-
-    active_power:
-      name: "Growatt Grid Active Power"
-
-    pv_active_power:
-      name: "Growatt PV Active Power"
-      filters:
-        - lambda:
-            float MIN_VALUE = 0.0;
-            float MAX_VALUE = 6000.0;
-            if (MIN_VALUE <= x && x <= MAX_VALUE) return x;
-            else return {};
-
-    frequency:
-      name: "Growatt AC Frequency"
-
-#Didn't work for me, needs more testing
-#    energy_production_day:
-#      name: "Growatt Today's Generation"
-#   total_energy_production:
-#     name: "Growatt Total Energy Production"
-
-
-    inverter_module_temp:
-      name: "Growatt Inverter Temperature"
-
-    inverter_status:
-      name: "Growatt Inverter Status"
-
   - platform: modbus_controller
     name: "Inverter Status"
     skip_updates: ${skip_updates_1min}
@@ -169,11 +82,38 @@ sensor:
 
   - platform: modbus_controller
     name: "Inverter Priority"
+    skip_updates: ${skip_updates_1min}
     address: 118
     register_type: "read"
     internal: true
     accuracy_decimals: 0
     id: priority
+
+  - platform: modbus_controller
+    name: "PV1 Voltage"
+    skip_updates: ${skip_updates_1min}
+    address: 3
+    register_type: "read"
+    unit_of_measurement: V
+    device_class: voltage
+    icon: mdi:flash
+    value_type: U_WORD
+    accuracy_decimals: 0
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "PV1 Current"
+    skip_updates: ${skip_updates_1min}
+    address: 4
+    register_type: "read"
+    unit_of_measurement: A
+    device_class: current
+    icon: mdi:flash
+    value_type: U_WORD
+    accuracy_decimals: 1
+    filters:
+    - multiply: 0.1
 
   - platform: modbus_controller
     name: "PV1 Power"
@@ -185,6 +125,32 @@ sensor:
     icon: mdi:flash
     value_type: U_DWORD
     accuracy_decimals: 0
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "PV2 Voltage "
+    skip_updates: ${skip_updates_1min}
+    address: 7
+    register_type: "read"
+    unit_of_measurement: V
+    device_class: voltage
+    icon: mdi:flash
+    value_type: U_WORD
+    accuracy_decimals: 0
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
+    name: "PV2 current"
+    skip_updates: ${skip_updates_1min}
+    address: 8
+    register_type: "read"
+    unit_of_measurement: A
+    device_class: current
+    icon: mdi:flash
+    value_type: U_WORD
+    accuracy_decimals: 1
     filters:
     - multiply: 0.1
 
@@ -228,7 +194,7 @@ sensor:
     - multiply: 0.1
 
   - platform: modbus_controller
-    name: "Inverter AC Energie Total"
+    name: "Inverter AC Energy Total"
     skip_updates: ${skip_updates_10min}
     address: 55
     register_type: "read"
@@ -242,17 +208,17 @@ sensor:
     - multiply: 0.1
 
   - platform: modbus_controller
-    name: "Growatt PV1 energy today"
+    name: "PV1 energy today"
     skip_updates: ${skip_updates_1min}
     address: 59
     register_type: "read"
-    unit_of_measurement: kW
+    unit_of_measurement: Wh
     device_class: energy
     icon: mdi:flash
     value_type: U_DWORD
-    accuracy_decimals: 1
+    accuracy_decimals: 2
     filters:
-    - multiply: 0.1
+    - multiply: 100
 
   - platform: modbus_controller
     name: "PV1 Energy Total"
@@ -284,7 +250,7 @@ sensor:
 
   - platform: modbus_controller
     id: pv2_energy_today
-    name: "Growatt PV2 Energy today"
+    name: "PV2 Energy today"
     skip_updates: ${skip_updates_1min}
     address: 63
     register_type: "read"
@@ -315,6 +281,7 @@ sensor:
 
   - platform: modbus_controller
     name: "PV generated energy lifetime"
+    skip_updates: ${skip_updates_10min}
     address: 91
     register_type: "read"
     unit_of_measurement: kWh
@@ -327,7 +294,22 @@ sensor:
     - multiply: 0.1
 
   - platform: modbus_controller
+    name: "Inverter Temperature"
+    skip_updates: ${skip_updates_1min}
+    address: 93
+    register_type: "read"
+    unit_of_measurement: °C
+    device_class: temperature
+    entity_category: diagnostic
+    icon: mdi:thermometer
+    value_type: U_WORD
+    accuracy_decimals: 1
+    filters:
+    - multiply: 0.1
+
+  - platform: modbus_controller
     name: "Today energy to load"
+    skip_updates: ${skip_updates_10min}
     address: 1060
     register_type: "read"
     unit_of_measurement: kWh
@@ -340,6 +322,7 @@ sensor:
 
   - platform: modbus_controller
     name: "Total energy to load"
+    skip_updates: ${skip_updates_10min}
     address: 1062
     register_type: "read"
     unit_of_measurement: kWh
@@ -397,6 +380,7 @@ sensor:
 
   - platform: modbus_controller
     name: "AC power from grid"
+    skip_updates: ${skip_updates_1min}
     address: 1021
     register_type: "read"
     unit_of_measurement: W
@@ -410,6 +394,7 @@ sensor:
 
   - platform: modbus_controller
     name: "AC power to grid"
+    skip_updates: ${skip_updates_1min}
     address: 1029
     register_type: "read"
     unit_of_measurement: W
@@ -422,8 +407,9 @@ sensor:
     - multiply: 0.1
 
   - platform: modbus_controller
-    # power AC PV and battery
+    # power AC PV and battery 
     name: "AC power total"
+    skip_updates: ${skip_updates_1min}
     address: 1037
     register_type: "read"
     unit_of_measurement: W
@@ -503,7 +489,7 @@ sensor:
     accuracy_decimals: 1
     filters:
     - multiply: 0.1
-
+ 
   - platform: modbus_controller
     name: "Battery discharged today"
     skip_updates: ${skip_updates_1min}
@@ -548,6 +534,7 @@ sensor:
 
   - platform: modbus_controller
     name: "Battery lifetime charged"
+    skip_updates: ${skip_updates_10min}
     address: 1058
     register_type: "read"
     unit_of_measurement: kWh
@@ -597,25 +584,15 @@ sensor:
 
 select:
   - platform: modbus_controller
-    name: "Batterie AC Charging ON/OFF (Only in battery first)"
+    name: "Battery AC Charging ON/OFF (Only in battery first)"
     icon: mdi:battery-charging-100
     address: 1092
     value_type: U_WORD
     optionsmap:
       "Deny": 0
       "Allow": 1
-
-# not working yet
-#  - platform: modbus_controller
-#    name: "Growatt Inverter Priority" #Nope
-#    icon: mdi:arrow-decision-outline
-#    address: 1044 #3144
-#    value_type: U_WORD
-#    optionsmap:
-#      "Load First": 0
-#      "Battery First": 1
-#      "Grid First": 2
-
+ 
+#untested
 switch:
   - platform: modbus_controller
     name: "Inverter ON/OFF"
@@ -631,7 +608,6 @@ switch:
     bitmask: 1
     icon: "mdi:toggle-switch"
 
-# untested
 number:
   - platform: modbus_controller
     name: "Stop discharge at % SOC (\"Load First\")"
