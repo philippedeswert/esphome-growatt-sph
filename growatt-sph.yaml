@@ -201,7 +201,7 @@ sensor:
     unit_of_measurement: kWh
     state_class: total_increasing
     device_class: energy
-    icon: mdi:solar-power-variant
+    icon: mdi:solar-power
     value_type: U_DWORD
     accuracy_decimals: 1
     filters:
@@ -214,7 +214,7 @@ sensor:
     register_type: "read"
     unit_of_measurement: Wh
     device_class: energy
-    icon: mdi:flash
+    icon: mdi:solar-power-variant
     value_type: U_DWORD
     accuracy_decimals: 2
     filters:
@@ -236,19 +236,6 @@ sensor:
     - multiply: 0.1
 
   - platform: modbus_controller
-    name: "Growatt PV2 generated energy today"
-    skip_updates: ${skip_updates_1min}
-    address: 63
-    register_type: "read"
-    unit_of_measurement: kW
-    device_class: energy
-    icon: mdi:flash
-    value_type: U_DWORD
-    accuracy_decimals: 1
-    filters:
-    - multiply: 0.1
-
-  - platform: modbus_controller
     id: pv2_energy_today
     name: "PV2 Energy today"
     skip_updates: ${skip_updates_1min}
@@ -260,7 +247,6 @@ sensor:
     icon: mdi:solar-power-variant
     value_type: U_DWORD
     accuracy_decimals: 1
-    internal: true
     filters:
     - multiply: 0.1
 
